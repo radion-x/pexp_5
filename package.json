@@ -18,7 +18,9 @@
     "git:log": "git log --oneline"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.67.0",
     "@hono/node-server": "^1.19.5",
+    "dotenv": "^17.2.3",
     "hono": "^4.10.3"
   },
   "devDependencies": {

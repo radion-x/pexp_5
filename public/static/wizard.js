@@ -11,6 +11,11 @@
   const painPointState = new Map();
   const painMarkerRefs = new Map();
   let isRestoring = false;
+  let aiSummaryContent = '';
+  let aiSummaryErrorMessage = '';
+  let aiSummaryInFlight = false;
+  let aiSummaryPayloadHash = '';
+  const defaultSummaryMessage = 'Provide consent and continue to generate an AI summary from your assessment.';
 
   // Elements
   const form = document.getElementById('intakeForm');
@@ -28,6 +33,10 @@
   const sliderValue = document.getElementById('sliderValue');
   const redFlagModal = document.getElementById('redFlagModal');
   const closeModalBtn = document.getElementById('closeModal');
+  const aiSummarySection = document.getElementById('aiSummarySection');
+  const aiSummaryStatusEl = document.getElementById('aiSummaryStatus');
+  const aiSummaryTextEl = document.getElementById('aiSummaryText');
+  const generateSummaryBtn = document.getElementById('generateSummaryBtn');
 
   // Body map elements
   const viewBtns = document.querySelectorAll('.view-btn');
@@ -43,6 +52,7 @@
 
   // Initialize
   function init() {
+    resetAiSummaryUI();
     setupEventListeners();
     restoreProgress();
     updateProgress();
@@ -72,6 +82,106 @@
     if (value <= 3) return 'low';
     if (value <= 7) return 'medium';
     return 'high';
+  }
+
+  function updateAiSummaryStatus(message, state) {
+    if (!aiSummaryStatusEl) return;
+    aiSummaryStatusEl.textContent = message;
+    if (state) {
+      aiSummaryStatusEl.setAttribute('data-state', state);
+    } else {
+      aiSummaryStatusEl.removeAttribute('data-state');
+    }
+  }
+
+  function renderAiSummaryContent() {
+    if (!aiSummaryTextEl) return;
+    aiSummaryTextEl.textContent = aiSummaryContent;
+  }
+
+  function resetAiSummaryUI() {
+    aiSummaryContent = '';
+    aiSummaryErrorMessage = '';
+    aiSummaryPayloadHash = '';
+    aiSummaryInFlight = false;
+    renderAiSummaryContent();
+    updateAiSummaryStatus(defaultSummaryMessage);
+    if (generateSummaryBtn) {
+      generateSummaryBtn.disabled = false;
+      generateSummaryBtn.textContent = 'Regenerate Summary';
+    }
+  }
+
+  async function generateAiSummary(force = false) {
+    if (!aiSummarySection || !aiSummaryStatusEl) return;
+    if (aiSummaryInFlight) return;
+
+    const payload = serializeForm();
+
+    if (!payload.consent) {
+      aiSummaryErrorMessage = 'Consent is required to generate an AI summary.';
+      aiSummaryContent = '';
+      aiSummaryPayloadHash = '';
+      renderAiSummaryContent();
+      updateAiSummaryStatus('Please confirm consent to enable AI summary.', 'error');
+      return;
+    }
+
+    const summaryInput = { ...payload };
+    delete summaryInput.aiSummary;
+    delete summaryInput.aiSummaryError;
+    delete summaryInput.currentStep;
+    delete summaryInput._savedAt;
+
+    const payloadHash = JSON.stringify(summaryInput);
+
+    if (!force && aiSummaryPayloadHash === payloadHash && aiSummaryContent) {
+      return;
+    }
+
+    aiSummaryInFlight = true;
+    aiSummaryErrorMessage = '';
+    aiSummaryContent = '';
+    renderAiSummaryContent();
+    updateAiSummaryStatus('Generating clinical summary...', 'loading');
+    if (generateSummaryBtn) {
+      generateSummaryBtn.disabled = true;
+      generateSummaryBtn.textContent = 'Generating...';
+    }
+
+    try {
+      const response = await fetch('/api/generate-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(summaryInput)
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.summary) {
+        const message = data.error || `AI summary failed (Status: ${response.status})`;
+        throw new Error(message);
+      }
+
+      aiSummaryContent = String(data.summary);
+      aiSummaryPayloadHash = payloadHash;
+      renderAiSummaryContent();
+      updateAiSummaryStatus(`Summary generated at ${new Date().toLocaleTimeString()}.`, 'success');
+      scheduleAutosave();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error generating AI summary.';
+      aiSummaryContent = '';
+      aiSummaryPayloadHash = '';
+      aiSummaryErrorMessage = message;
+      renderAiSummaryContent();
+      updateAiSummaryStatus(message, 'error');
+      scheduleAutosave();
+    } finally {
+      aiSummaryInFlight = false;
+      if (generateSummaryBtn) {
+        generateSummaryBtn.disabled = false;
+        generateSummaryBtn.textContent = 'Regenerate Summary';
+      }
+    }
   }
 
   function handleBodyMapClick(map, event) {
@@ -227,6 +337,24 @@
       });
     }
 
+    if (generateSummaryBtn) {
+      generateSummaryBtn.addEventListener('click', () => {
+        generateAiSummary(true);
+      });
+    }
+
+    const consentInput = form.querySelector('input[name="consent"]');
+    if (consentInput instanceof HTMLInputElement) {
+      consentInput.addEventListener('change', () => {
+        if (!consentInput.checked) {
+          resetAiSummaryUI();
+        } else {
+          generateAiSummary(true);
+        }
+        scheduleAutosave();
+      });
+    }
+
     // View toggle buttons
     viewBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -340,6 +468,9 @@
     // Generate review if on last step
     if (step === totalSteps) {
       generateReview();
+      if (!isRestoring) {
+        generateAiSummary();
+      }
     }
   }
 
@@ -494,6 +625,8 @@
 
     data.selectedAreas = Array.from(selectedPainAreas);
     data.painPoints = Array.from(painPointState.values());
+    data.aiSummary = aiSummaryContent;
+    data.aiSummaryError = aiSummaryErrorMessage;
     data.currentStep = currentStep;
     data._savedAt = new Date().toISOString();
 
@@ -540,7 +673,7 @@
       // Restore form fields
       for (const [k, v] of Object.entries(obj)) {
         if (k === 'selectedAreas' || k === 'currentStep' || k === '_savedAt') continue;
-        if (k === 'painPoints') continue;
+        if (k === 'painPoints' || k === 'aiSummary' || k === 'aiSummaryError') continue;
 
         const el = form.elements[k];
         if (!el) continue;
@@ -599,6 +732,22 @@
         updateSelectedAreas();
       }
 
+      if (typeof obj.aiSummary === 'string' && obj.aiSummary.trim()) {
+        aiSummaryContent = obj.aiSummary;
+        aiSummaryPayloadHash = '';
+        renderAiSummaryContent();
+        updateAiSummaryStatus('Summary restored from previous session.', 'success');
+      } else {
+        resetAiSummaryUI();
+      }
+
+      if (typeof obj.aiSummaryError === 'string' && obj.aiSummaryError) {
+        aiSummaryErrorMessage = obj.aiSummaryError;
+        if (!aiSummaryContent) {
+          updateAiSummaryStatus(aiSummaryErrorMessage, 'error');
+        }
+      }
+
       // Restore step
       if (obj.currentStep) {
         showStep(obj.currentStep);
@@ -651,6 +800,7 @@
           alert('Thank you! Your assessment has been submitted successfully.');
           form.reset();
           clearPainSelections();
+          resetAiSummaryUI();
           if (painSlider && sliderValue) {
             sliderValue.textContent = painSlider.value;
           }

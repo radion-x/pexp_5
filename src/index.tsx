@@ -1,15 +1,78 @@
+import 'dotenv/config'
+
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { join } from 'node:path'
+import { Anthropic } from '@anthropic-ai/sdk'
+
+import { generateComprehensivePrompt } from './prompt-builder.js'
 
 const app = new Hono()
+
+const claudeApiKey = process.env.CLAUDE_API_KEY
+const claudeModel = process.env.CLAUDE_SUMMARY_MODEL ?? process.env.CLAUDE_MODEL ?? 'claude-3-5-sonnet-20241022'
+const anthropic = claudeApiKey ? new Anthropic({ apiKey: claudeApiKey }) : null
+
+if (!claudeApiKey) {
+  console.warn('CLAUDE_API_KEY is not set. AI summary endpoint will be disabled.')
+}
 
 // Enable CORS for API routes
 app.use('/api/*', cors())
 
 // Serve static assets when running under Node
 app.use('/static/*', serveStatic({ root: join(process.cwd(), 'public') }))
+
+app.post('/api/generate-summary', async (c) => {
+  const client = anthropic
+  if (!client) {
+    return c.json({
+      error: 'AI summary service is not configured. Please contact support.'
+    }, 503)
+  }
+
+  let formData: unknown
+
+  try {
+    formData = await c.req.json()
+  } catch (error) {
+    console.error('Invalid JSON payload for summary generation:', error)
+    return c.json({ error: 'Invalid JSON payload.' }, 400)
+  }
+
+  const prompt = generateComprehensivePrompt(formData as any)
+
+  if (!prompt.trim()) {
+    return c.json({ error: 'Unable to build AI prompt from the provided data.' }, 400)
+  }
+
+  try {
+    const response = await client.messages.create({
+      model: claudeModel,
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }]
+    })
+
+    const summary = response.content
+      ?.map((part: any) => (part?.type === 'text' ? part.text : ''))
+      .join('')
+      .trim()
+
+    if (!summary) {
+      return c.json({ error: 'AI summary was empty.' }, 502)
+    }
+
+    return c.json({ summary })
+  } catch (error) {
+    console.error('Failed to generate AI summary:', error)
+    const message =
+      error instanceof Error && error.message
+        ? error.message
+        : 'An unexpected error occurred while generating the AI summary.'
+    return c.json({ error: message }, 502)
+  }
+})
 
 // API route for form submission
 app.post('/api/submit-intake', async (c) => {
@@ -424,6 +487,19 @@ app.get('/', (c) => {
                 
                 <div id="reviewSummary" class="review-summary">
                   <!-- Summary will be populated by JavaScript -->
+                </div>
+
+                <div class="ai-summary-section" id="aiSummarySection">
+                  <div class="ai-summary-header">
+                    <h3>AI Clinical Summary</h3>
+                    <button type="button" class="btn btn-secondary btn-compact" id="generateSummaryBtn">
+                      Regenerate Summary
+                    </button>
+                  </div>
+                  <p class="ai-summary-status" id="aiSummaryStatus">
+                    Provide consent and continue to generate an AI summary from your assessment.
+                  </p>
+                  <pre class="ai-summary-text" id="aiSummaryText" aria-live="polite"></pre>
                 </div>
 
                 <div class="consent-section">
