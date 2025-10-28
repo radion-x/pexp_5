@@ -8,6 +8,9 @@
   const selectedPainAreas = new Set();
   const STORAGE_KEY = 'pexp_wizard_autosave_v2';
   let autosaveTimer = null;
+  const painPointState = new Map();
+  const painMarkerRefs = new Map();
+  let isRestoring = false;
 
   // Elements
   const form = document.getElementById('intakeForm');
@@ -29,7 +32,14 @@
   // Body map elements
   const viewBtns = document.querySelectorAll('.view-btn');
   const bodyDiagrams = document.querySelectorAll('.body-diagram');
-  const bodyParts = document.querySelectorAll('.body-part');
+  const bodyMaps = Array.from(bodyDiagrams).map(diagram => {
+    const view = diagram.dataset.view || 'front';
+    const image = diagram.querySelector('.body-map-image');
+    const layer = diagram.querySelector('.hotspot-layer');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    return { view, diagram, image, layer, canvas, ctx };
+  });
 
   // Initialize
   function init() {
@@ -37,6 +47,167 @@
     restoreProgress();
     updateProgress();
     updateNavigation();
+  }
+
+  function getHotspotsForView(view) {
+    const data = window.PAIN_MAP_DATA || {};
+    if (view === 'back') {
+      return Array.isArray(data.backHotspots) ? data.backHotspots : [];
+    }
+    return Array.isArray(data.frontHotspots) ? data.frontHotspots : [];
+  }
+
+  function correctAnatomicalLabel(name, view) {
+    if (view !== 'front') return name;
+    if (name.includes('Left')) {
+      return name.replace('Left', 'Right');
+    }
+    if (name.includes('Right')) {
+      return name.replace('Right', 'Left');
+    }
+    return name;
+  }
+
+  function intensityCategory(value) {
+    if (value <= 3) return 'low';
+    if (value <= 7) return 'medium';
+    return 'high';
+  }
+
+  function handleBodyMapClick(map, event) {
+    const { image, layer, view, canvas, ctx } = map;
+    if (!image || !layer) return;
+
+    const rect = image.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const clickY = event.clientY - rect.top;
+
+    if (clickX < 0 || clickX > rect.width || clickY < 0 || clickY > rect.height) {
+      return;
+    }
+
+    if (canvas.width && canvas.height && ctx) {
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const px = Math.round(clickX * scaleX);
+      const py = Math.round(clickY * scaleY);
+      if (px >= 0 && py >= 0 && px < canvas.width && py < canvas.height) {
+        const pixel = ctx.getImageData(px, py, 1, 1).data;
+        if (pixel[3] < 10) {
+          return;
+        }
+      }
+    }
+
+    const hotspots = getHotspotsForView(view);
+    if (!hotspots.length) {
+      console.warn('No hotspot data available for body map view:', view);
+      return;
+    }
+
+    const imageWidth = rect.width;
+    const imageHeight = rect.height;
+    let closest = null;
+    let minDistance = Infinity;
+
+    for (const hotspot of hotspots) {
+      const centerX = (hotspot.x + hotspot.width / 2) * imageWidth;
+      const centerY = (hotspot.y + hotspot.height / 2) * imageHeight;
+      const distance = Math.hypot(clickX - centerX, clickY - centerY);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = hotspot;
+      }
+    }
+
+    if (!closest) return;
+
+    const correctedName = correctAnatomicalLabel(closest.name, view);
+    const labelPrefix = view === 'front' ? 'Front' : 'Back';
+    const displayName = `${labelPrefix}: ${correctedName}`;
+    const key = `${view}:${closest.id}:${correctedName}`;
+
+    if (painPointState.has(key)) {
+      removePainPoint(key);
+      return;
+    }
+
+    const leftPercent = (clickX / imageWidth) * 100;
+    const topPercent = (clickY / imageHeight) * 100;
+    const intensityValue = painSlider ? Number(painSlider.value) : 5;
+    const category = intensityCategory(intensityValue);
+
+    const point = {
+      key,
+      view,
+      region: correctedName,
+      originalName: closest.name,
+      displayName,
+      xPercent: Number(leftPercent.toFixed(4)),
+      yPercent: Number(topPercent.toFixed(4)),
+      intensity: intensityValue,
+      intensityLevel: category
+    };
+
+    painPointState.set(key, point);
+    addPainMarker(point, layer);
+    refreshSelectedAreasCache();
+    if (!isRestoring) {
+      scheduleAutosave();
+    }
+  }
+
+  function addPainMarker(point, layer) {
+    if (!layer) return;
+    const marker = document.createElement('button');
+    marker.type = 'button';
+    marker.className = 'pain-marker';
+    marker.style.left = `${point.xPercent}%`;
+    marker.style.top = `${point.yPercent}%`;
+    marker.dataset.id = point.key;
+    marker.dataset.intensity = point.intensityLevel;
+    marker.title = `${point.displayName} • Intensity ${point.intensity}/10`;
+    marker.addEventListener('click', (event) => {
+      event.stopPropagation();
+      removePainPoint(point.key);
+    });
+    layer.appendChild(marker);
+    painMarkerRefs.set(point.key, marker);
+  }
+
+  function removePainPoint(key) {
+    const point = painPointState.get(key);
+    if (!point) return;
+
+    painPointState.delete(key);
+    const marker = painMarkerRefs.get(key);
+    if (marker && marker.parentElement) {
+      marker.parentElement.removeChild(marker);
+    }
+    painMarkerRefs.delete(key);
+    refreshSelectedAreasCache();
+    if (!isRestoring) {
+      scheduleAutosave();
+    }
+  }
+
+  function refreshSelectedAreasCache() {
+    selectedPainAreas.clear();
+    painPointState.forEach(point => {
+      selectedPainAreas.add(point.displayName);
+    });
+    updateSelectedAreas();
+  }
+
+  function clearPainSelections() {
+    painPointState.clear();
+    painMarkerRefs.forEach(marker => {
+      if (marker && marker.parentElement) {
+        marker.parentElement.removeChild(marker);
+      }
+    });
+    painMarkerRefs.clear();
+    refreshSelectedAreasCache();
   }
 
   // Event Listeners
@@ -49,7 +220,9 @@
     // Pain slider
     if (painSlider) {
       painSlider.addEventListener('input', () => {
-        sliderValue.textContent = painSlider.value;
+        if (sliderValue) {
+          sliderValue.textContent = painSlider.value;
+        }
         scheduleAutosave();
       });
     }
@@ -66,19 +239,25 @@
       });
     });
 
-    // Body parts selection
-    bodyParts.forEach(part => {
-      part.addEventListener('click', () => {
-        const area = part.dataset.area;
-        if (selectedPainAreas.has(area)) {
-          selectedPainAreas.delete(area);
-          part.classList.remove('selected');
-        } else {
-          selectedPainAreas.add(area);
-          part.classList.add('selected');
-        }
-        updateSelectedAreas();
-        scheduleAutosave();
+    // Body map selection
+    bodyMaps.forEach(map => {
+      if (!map.image || !map.ctx) return;
+
+      const syncCanvas = () => {
+        if (!map.image.naturalWidth || !map.image.naturalHeight) return;
+        map.canvas.width = map.image.naturalWidth;
+        map.canvas.height = map.image.naturalHeight;
+        map.ctx.clearRect(0, 0, map.canvas.width, map.canvas.height);
+        map.ctx.drawImage(map.image, 0, 0, map.canvas.width, map.canvas.height);
+      };
+
+      map.image.addEventListener('load', syncCanvas);
+      if (map.image.complete && map.image.naturalWidth) {
+        syncCanvas();
+      }
+
+      map.image.addEventListener('click', (event) => {
+        handleBodyMapClick(map, event);
       });
     });
 
@@ -314,6 +493,7 @@
     }
 
     data.selectedAreas = Array.from(selectedPainAreas);
+    data.painPoints = Array.from(painPointState.values());
     data.currentStep = currentStep;
     data._savedAt = new Date().toISOString();
 
@@ -322,6 +502,7 @@
 
   // Autosave
   function scheduleAutosave() {
+    if (isRestoring) return;
     if (autosaveTimer) clearTimeout(autosaveTimer);
     autosaveTimer = setTimeout(saveToLocal, 800);
     if (saveStatus) {
@@ -353,11 +534,13 @@
     if (!raw) return;
 
     try {
+      isRestoring = true;
       const obj = JSON.parse(raw);
 
       // Restore form fields
       for (const [k, v] of Object.entries(obj)) {
         if (k === 'selectedAreas' || k === 'currentStep' || k === '_savedAt') continue;
+        if (k === 'painPoints') continue;
 
         const el = form.elements[k];
         if (!el) continue;
@@ -382,13 +565,37 @@
         }
       }
 
-      // Restore pain areas
-      if (Array.isArray(obj.selectedAreas)) {
-        obj.selectedAreas.forEach(area => {
-          selectedPainAreas.add(area);
-          const part = document.querySelector(`.body-part[data-area="${area}"]`);
-          if (part) part.classList.add('selected');
+      clearPainSelections();
+
+      if (Array.isArray(obj.painPoints) && obj.painPoints.length > 0) {
+        obj.painPoints.forEach(rawPoint => {
+          if (!rawPoint) return;
+          const view = rawPoint.view === 'back' ? 'back' : 'front';
+          const displayName = rawPoint.displayName ||
+            `${view === 'front' ? 'Front' : 'Back'}: ${rawPoint.region || rawPoint.originalName || 'Region'}`;
+          const key = rawPoint.key || `${view}:${rawPoint.id || rawPoint.region || displayName}`;
+          const map = bodyMaps.find(m => m.view === view);
+          if (!map || !map.layer) return;
+
+          const point = {
+            key,
+            view,
+            region: rawPoint.region || rawPoint.originalName || displayName,
+            originalName: rawPoint.originalName || rawPoint.region || displayName,
+            displayName,
+            xPercent: typeof rawPoint.xPercent === 'number' ? rawPoint.xPercent : Number(rawPoint.xPercent) || 0,
+            yPercent: typeof rawPoint.yPercent === 'number' ? rawPoint.yPercent : Number(rawPoint.yPercent) || 0,
+            intensity: typeof rawPoint.intensity === 'number' ? rawPoint.intensity : Number(rawPoint.intensity) || 5,
+            intensityLevel: rawPoint.intensityLevel || intensityCategory(Number(rawPoint.intensity) || 5)
+          };
+
+          painPointState.set(point.key, point);
+          addPainMarker(point, map.layer);
         });
+        refreshSelectedAreasCache();
+      } else if (Array.isArray(obj.selectedAreas)) {
+        selectedPainAreas.clear();
+        obj.selectedAreas.forEach(area => selectedPainAreas.add(area));
         updateSelectedAreas();
       }
 
@@ -402,8 +609,10 @@
         saveStatus.textContent = `Restored from ${savedTime}`;
         saveStatus.style.color = '#16a34a';
       }
+      isRestoring = false;
     } catch (e) {
       console.warn('Restore failed', e);
+      isRestoring = false;
     }
   }
 
@@ -441,9 +650,10 @@
         setTimeout(() => {
           alert('Thank you! Your assessment has been submitted successfully.');
           form.reset();
-          selectedPainAreas.clear();
-          bodyParts.forEach(part => part.classList.remove('selected'));
-          updateSelectedAreas();
+          clearPainSelections();
+          if (painSlider && sliderValue) {
+            sliderValue.textContent = painSlider.value;
+          }
           showStep(1);
         }, 500);
       } else {

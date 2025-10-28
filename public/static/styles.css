@@ -399,44 +399,63 @@ select.full-width {
 
 .body-diagram {
   display: none;
-  max-width: 400px;
-  margin: 0 auto;
+  max-width: 420px;
+  margin: 0 auto 24px;
 }
 
 .body-diagram.active {
   display: block;
 }
 
-.body-svg {
+.body-map-wrapper {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  filter: drop-shadow(0 18px 35px rgba(15, 23, 42, 0.18));
+}
+
+.body-map-image {
   width: 100%;
   height: auto;
+  display: block;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(241, 245, 249, 0.85), rgba(255, 255, 255, 0.85));
 }
 
-.body-part {
-  fill: #e0e7ff;
-  stroke: #6366f1;
-  stroke-width: 2;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.body-part:hover {
-  fill: #c7d2fe;
-  stroke: #4f46e5;
-  stroke-width: 3;
-}
-
-.body-part.selected {
-  fill: var(--primary);
-  stroke: var(--primary-dark);
-  stroke-width: 3;
-}
-
-.body-label {
-  font-size: 10px;
-  fill: #1f2937;
+.hotspot-layer {
+  position: absolute;
+  inset: 0;
   pointer-events: none;
-  font-weight: 600;
+}
+
+.pain-marker {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  box-shadow: 0 6px 12px rgba(15, 23, 42, 0.4);
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.pain-marker:hover {
+  transform: translate(-50%, -50%) scale(1.18);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.45);
+}
+
+.pain-marker[data-intensity="low"] {
+  background: rgba(59, 130, 246, 0.85);
+}
+
+.pain-marker[data-intensity="medium"] {
+  background: rgba(251, 191, 36, 0.95);
+}
+
+.pain-marker[data-intensity="high"] {
+  background: rgba(239, 68, 68, 0.95);
 }
 
 .pain-details-section {

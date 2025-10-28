@@ -163,142 +163,18 @@ app.get('/', (c) => {
 
                     <!-- Front View -->
                     <div class="body-diagram active" data-view="front">
-                      <svg viewBox="0 0 300 500" class="body-svg">
-                        <!-- Head -->
-                        <ellipse cx="150" cy="40" rx="25" ry="30" class="body-part" data-area="Head" />
-                        <text x="150" y="45" text-anchor="middle" class="body-label">Head</text>
-                        
-                        <!-- Neck -->
-                        <rect x="140" y="65" width="20" height="20" class="body-part" data-area="Neck" />
-                        <text x="150" y="78" text-anchor="middle" class="body-label">Neck</text>
-                        
-                        <!-- Shoulders -->
-                        <circle cx="110" cy="95" r="18" class="body-part" data-area="L.Shoulder" />
-                        <text x="110" y="100" text-anchor="middle" class="body-label">L.Shoulder</text>
-                        
-                        <circle cx="190" cy="95" r="18" class="body-part" data-area="R.Shoulder" />
-                        <text x="190" y="100" text-anchor="middle" class="body-label">R.Shoulder</text>
-                        
-                        <!-- Chest/Upper Back -->
-                        <rect x="125" y="90" width="50" height="40" class="body-part" data-area="Chest" />
-                        <text x="150" y="115" text-anchor="middle" class="body-label">Chest</text>
-                        
-                        <!-- Arms -->
-                        <rect x="85" y="115" width="20" height="80" class="body-part" data-area="L.Arm" />
-                        <text x="95" y="155" text-anchor="middle" class="body-label">L.Arm</text>
-                        
-                        <rect x="195" y="115" width="20" height="80" class="body-part" data-area="R.Arm" />
-                        <text x="205" y="155" text-anchor="middle" class="body-label">R.Arm</text>
-                        
-                        <!-- Abdomen -->
-                        <rect x="125" y="135" width="50" height="40" class="body-part" data-area="Abdomen" />
-                        <text x="150" y="158" text-anchor="middle" class="body-label">Abdomen</text>
-                        
-                        <!-- Hips -->
-                        <circle cx="130" cy="195" r="18" class="body-part" data-area="L.Hip" />
-                        <text x="130" y="200" text-anchor="middle" class="body-label">L.Hip</text>
-                        
-                        <circle cx="170" cy="195" r="18" class="body-part" data-area="R.Hip" />
-                        <text x="170" y="200" text-anchor="middle" class="body-label">R.Hip</text>
-                        
-                        <!-- Thighs -->
-                        <rect x="120" y="220" width="25" height="80" class="body-part" data-area="L.Thigh" />
-                        <text x="132" y="260" text-anchor="middle" class="body-label">L.Thigh</text>
-                        
-                        <rect x="155" y="220" width="25" height="80" class="body-part" data-area="R.Thigh" />
-                        <text x="167" y="260" text-anchor="middle" class="body-label">R.Thigh</text>
-                        
-                        <!-- Knees -->
-                        <circle cx="132" cy="315" r="18" class="body-part" data-area="L.Knee" />
-                        <text x="132" y="320" text-anchor="middle" class="body-label">L.Knee</text>
-                        
-                        <circle cx="167" cy="315" r="18" class="body-part" data-area="R.Knee" />
-                        <text x="167" y="320" text-anchor="middle" class="body-label">R.Knee</text>
-                        
-                        <!-- Lower Legs -->
-                        <rect x="120" y="340" width="25" height="80" class="body-part" data-area="L.Leg" />
-                        <text x="132" y="380" text-anchor="middle" class="body-label">L.Leg</text>
-                        
-                        <rect x="155" y="340" width="25" height="80" class="body-part" data-area="R.Leg" />
-                        <text x="167" y="380" text-anchor="middle" class="body-label">R.Leg</text>
-                        
-                        <!-- Feet -->
-                        <ellipse cx="132" cy="440" rx="18" ry="25" class="body-part" data-area="L.Foot" />
-                        <text x="132" y="445" text-anchor="middle" class="body-label">L.Foot</text>
-                        
-                        <ellipse cx="167" cy="440" rx="18" ry="25" class="body-part" data-area="R.Foot" />
-                        <text x="167" y="445" text-anchor="middle" class="body-label">R.Foot</text>
-                      </svg>
+                      <div class="body-map-wrapper">
+                        <img src="/static/images/body-front.png" alt="Front view body map" class="body-map-image" />
+                        <div class="hotspot-layer" data-view="front" aria-hidden="true"></div>
+                      </div>
                     </div>
 
                     <!-- Back View -->
                     <div class="body-diagram" data-view="back">
-                      <svg viewBox="0 0 300 500" class="body-svg">
-                        <!-- Head Back -->
-                        <ellipse cx="150" cy="40" rx="25" ry="30" class="body-part" data-area="Head (Back)" />
-                        <text x="150" y="45" text-anchor="middle" class="body-label">Head</text>
-                        
-                        <!-- Neck Back -->
-                        <rect x="140" y="65" width="20" height="20" class="body-part" data-area="Neck (Back)" />
-                        <text x="150" y="78" text-anchor="middle" class="body-label">Neck</text>
-                        
-                        <!-- Shoulders Back -->
-                        <circle cx="110" cy="95" r="18" class="body-part" data-area="L.Shoulder (Back)" />
-                        <text x="110" y="100" text-anchor="middle" class="body-label">L.Shoulder</text>
-                        
-                        <circle cx="190" cy="95" r="18" class="body-part" data-area="R.Shoulder (Back)" />
-                        <text x="190" y="100" text-anchor="middle" class="body-label">R.Shoulder</text>
-                        
-                        <!-- Upper Back -->
-                        <rect x="125" y="90" width="50" height="40" class="body-part" data-area="Upper Back" />
-                        <text x="150" y="115" text-anchor="middle" class="body-label">Upper Back</text>
-                        
-                        <!-- Arms Back -->
-                        <rect x="85" y="115" width="20" height="80" class="body-part" data-area="L.Arm (Back)" />
-                        <text x="95" y="155" text-anchor="middle" class="body-label">L.Arm</text>
-                        
-                        <rect x="195" y="115" width="20" height="80" class="body-part" data-area="R.Arm (Back)" />
-                        <text x="205" y="155" text-anchor="middle" class="body-label">R.Arm</text>
-                        
-                        <!-- Lower Back -->
-                        <rect x="125" y="135" width="50" height="40" class="body-part" data-area="Lower Back" />
-                        <text x="150" y="158" text-anchor="middle" class="body-label">Lower Back</text>
-                        
-                        <!-- Glutes -->
-                        <circle cx="130" cy="195" r="18" class="body-part" data-area="L.Glute" />
-                        <text x="130" y="200" text-anchor="middle" class="body-label">L.Glute</text>
-                        
-                        <circle cx="170" cy="195" r="18" class="body-part" data-area="R.Glute" />
-                        <text x="170" y="200" text-anchor="middle" class="body-label">R.Glute</text>
-                        
-                        <!-- Hamstrings -->
-                        <rect x="120" y="220" width="25" height="80" class="body-part" data-area="L.Hamstring" />
-                        <text x="132" y="260" text-anchor="middle" class="body-label">L.Hamstring</text>
-                        
-                        <rect x="155" y="220" width="25" height="80" class="body-part" data-area="R.Hamstring" />
-                        <text x="167" y="260" text-anchor="middle" class="body-label">R.Hamstring</text>
-                        
-                        <!-- Knees Back -->
-                        <circle cx="132" cy="315" r="18" class="body-part" data-area="L.Knee (Back)" />
-                        <text x="132" y="320" text-anchor="middle" class="body-label">L.Knee</text>
-                        
-                        <circle cx="167" cy="315" r="18" class="body-part" data-area="R.Knee (Back)" />
-                        <text x="167" y="320" text-anchor="middle" class="body-label">R.Knee</text>
-                        
-                        <!-- Calves -->
-                        <rect x="120" y="340" width="25" height="80" class="body-part" data-area="L.Calf" />
-                        <text x="132" y="380" text-anchor="middle" class="body-label">L.Calf</text>
-                        
-                        <rect x="155" y="340" width="25" height="80" class="body-part" data-area="R.Calf" />
-                        <text x="167" y="380" text-anchor="middle" class="body-label">R.Calf</text>
-                        
-                        <!-- Feet Back -->
-                        <ellipse cx="132" cy="440" rx="18" ry="25" class="body-part" data-area="L.Foot (Back)" />
-                        <text x="132" y="445" text-anchor="middle" class="body-label">L.Foot</text>
-                        
-                        <ellipse cx="167" cy="440" rx="18" ry="25" class="body-part" data-area="R.Foot (Back)" />
-                        <text x="167" y="445" text-anchor="middle" class="body-label">R.Foot</text>
-                      </svg>
+                      <div class="body-map-wrapper">
+                        <img src="/static/images/body-back.png" alt="Back view body map" class="body-map-image" />
+                        <div class="hotspot-layer" data-view="back" aria-hidden="true"></div>
+                      </div>
                     </div>
                   </div>
 
@@ -584,6 +460,7 @@ app.get('/', (c) => {
         </div>
       </div>
 
+      <script src="/static/pain-map-data.js"></script>
       <script src="/static/wizard.js"></script>
     </body>
     </html>
