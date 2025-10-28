@@ -1,14 +1,15 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { serveStatic } from 'hono/cloudflare-workers'
+import { serveStatic } from '@hono/node-server/serve-static'
+import { join } from 'node:path'
 
 const app = new Hono()
 
 // Enable CORS for API routes
 app.use('/api/*', cors())
 
-// Serve static files
-app.use('/static/*', serveStatic({ root: './public' }))
+// Serve static assets when running under Node
+app.use('/static/*', serveStatic({ root: join(process.cwd(), 'public') }))
 
 // API route for form submission
 app.post('/api/submit-intake', async (c) => {
