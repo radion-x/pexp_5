@@ -20,6 +20,13 @@
   const generateButtonDefaultLabel = 'Generate Summary';
   const generateButtonRepeatLabel = 'Generate Again';
   let hasRestoredDraft = false;
+  const logPrefix = '[Wizard]';
+
+  function logDebug(...args) {
+    if (typeof console !== 'undefined' && console.debug) {
+      console.debug(logPrefix, ...args);
+    }
+  }
 
   // Elements
   const form = document.getElementById('intakeForm');
@@ -65,12 +72,14 @@
   function showResumeBanner() {
     if (resumeBanner) {
       resumeBanner.classList.remove('hidden');
+      logDebug('Showing resume banner');
     }
   }
 
   function hideResumeBanner() {
     if (resumeBanner) {
       resumeBanner.classList.add('hidden');
+      logDebug('Hiding resume banner');
     }
   }
 
@@ -90,11 +99,10 @@
   function init() {
     resetAiSummaryUI();
     setupEventListeners();
-    if (hasSavedDraft()) {
+    const hasSaved = hasSavedDraft();
+    const restored = restoreProgress();
+    if (hasSaved && restored) {
       showResumeBanner();
-      restoreProgress();
-    } else {
-      restoreProgress();
     }
     updateProgress();
     updateNavigation();
@@ -450,10 +458,12 @@
     } catch (error) {
       console.warn('Unable to clear saved draft:', error);
     }
+    logDebug('Starting over');
     form.reset();
     clearPainSelections();
     resetAiSummaryUI();
     hideResumeBanner();
+    hasRestoredDraft = false;
     currentStep = 1;
     viewBtns.forEach(btn => {
       const isFront = btn.dataset.view === 'front';
@@ -507,6 +517,7 @@
       resumeContinueBtn.addEventListener('click', () => {
         hideResumeBanner();
         if (!hasRestoredDraft) {
+          logDebug('Resume banner continue tapped, attempting restore');
           restoreProgress();
         }
       });
@@ -514,6 +525,7 @@
 
     if (resumeStartOverBtn) {
       resumeStartOverBtn.addEventListener('click', () => {
+        logDebug('Resume banner start over tapped');
         startOverWizard();
       });
     }
@@ -850,14 +862,23 @@
       raw = localStorage.getItem(STORAGE_KEY);
     } catch (error) {
       console.warn('Accessing saved draft failed:', error);
-      return;
+      return false;
     }
 
-    if (!raw) return;
+    if (!raw) {
+      logDebug('No saved draft found');
+      return false;
+    }
 
     try {
       isRestoring = true;
       const obj = JSON.parse(raw);
+
+      logDebug('Restoring draft', {
+        hasPainPoints: Array.isArray(obj?.painPoints) && obj.painPoints.length > 0,
+        savedStep: obj?.currentStep,
+        savedAt: obj?._savedAt
+      });
 
       // Restore form fields
       for (const [k, v] of Object.entries(obj)) {
@@ -949,9 +970,11 @@
       }
       hasRestoredDraft = true;
       isRestoring = false;
+      return true;
     } catch (e) {
       console.warn('Restore failed', e);
       isRestoring = false;
+      return false;
     }
   }
 
