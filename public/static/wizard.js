@@ -845,7 +845,14 @@
   }
 
   function restoreProgress() {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    let raw;
+    try {
+      raw = localStorage.getItem(STORAGE_KEY);
+    } catch (error) {
+      console.warn('Accessing saved draft failed:', error);
+      return;
+    }
+
     if (!raw) return;
 
     try {
