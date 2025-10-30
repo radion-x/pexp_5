@@ -61,9 +61,24 @@ body {
 
 /* Wizard Header */
 .wizard-header {
-  background: var(--primary);
-  padding: 24px 0;
-  box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, var(--primary) 0%, #138a7f 100%);
+  padding: 28px 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.wizard-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+  background-size: 40px 40px;
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 .wizard-steps {
@@ -74,16 +89,21 @@ body {
   align-items: center;
   padding: 0 24px;
   position: relative;
+  z-index: 1;
 }
 
 .wizard-steps::before {
   content: '';
   position: absolute;
-  top: 22px;
+  top: 24px;
   left: 10%;
   right: 10%;
   height: 3px;
-  background: rgba(255, 255, 255, 0.3);
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0.2) 100%);
+  border-radius: 2px;
   z-index: 0;
 }
 
@@ -91,11 +111,11 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   position: relative;
   z-index: 1;
-  opacity: 0.6;
-  transition: opacity 0.3s;
+  opacity: 0.5;
+  transition: all 0.3s ease;
 }
 
 .step.active,
@@ -104,49 +124,68 @@ body {
 }
 
 .step-circle {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 18px;
   color: white;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
 }
 
 .step.active .step-circle {
   background: white;
   color: var(--primary);
-  transform: scale(1.1);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+  transform: scale(1.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(22, 165, 150, 0.3);
 }
 
 .step.completed .step-circle {
-  background: white;
-  color: var(--success);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.step.completed .step-circle::after {
+  content: '✓';
+  position: absolute;
+  font-size: 14px;
+  font-weight: 900;
+  color: white;
 }
 
 /* Make completed and active steps clickable */
 .step.completed:hover .step-circle,
 .step.active:hover .step-circle {
-  transform: scale(1.15);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.4);
+  transform: scale(1.18);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 0 0 4px rgba(255, 255, 255, 0.4);
   cursor: pointer;
 }
 
 .step.completed:hover,
 .step.active:hover {
   cursor: pointer;
+  opacity: 1;
+}
+
+.step.completed .step-circle {
+  font-size: 0;
 }
 
 .step-label {
   font-size: 13px;
   color: white;
-  font-weight: 500;
+  font-weight: 600;
   text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.3px;
 }
 
 /* Wizard Container */
@@ -929,11 +968,39 @@ input[type="range"]::-moz-range-thumb {
 
 @media (max-width: 768px) {
   .wizard-header {
-    padding: 16px 0;
+    padding: 12px 0;
   }
 
   .wizard-steps {
-    padding: 0 16px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .wizard-steps::before {
+    top: 14px;
+    height: 2px;
+  }
+
+  .step {
+    gap: 4px;
+  }
+
+  .step-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .step.active .step-circle {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+  }
+
+  .step.completed:hover .step-circle,
+  .step.active:hover .step-circle {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
   }
 
   .step-label {
