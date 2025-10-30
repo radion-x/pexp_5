@@ -761,13 +761,52 @@
 
   // Pain Areas
   function updateSelectedAreas() {
-    if (selectedAreasEl) {
-      if (selectedPainAreas.size === 0) {
-        selectedAreasEl.textContent = 'No areas selected yet';
-      } else {
-        selectedAreasEl.textContent = Array.from(selectedPainAreas).join(', ');
-      }
+    if (!selectedAreasEl) return;
+
+    // Clear the list
+    selectedAreasEl.innerHTML = '';
+
+    if (painPointState.size === 0) {
+      const emptyItem = document.createElement('li');
+      emptyItem.className = 'no-pain-points';
+      emptyItem.textContent = 'No areas selected yet';
+      selectedAreasEl.appendChild(emptyItem);
+      return;
     }
+
+    // Create list items for each pain point
+    painPointState.forEach((point, key) => {
+      const li = document.createElement('li');
+      li.className = 'pain-point-item';
+
+      const info = document.createElement('div');
+      info.className = 'pain-point-info';
+
+      const name = document.createElement('span');
+      name.className = 'pain-point-name';
+      name.textContent = point.displayName;
+
+      const intensity = document.createElement('span');
+      intensity.className = `pain-point-intensity ${point.intensityLevel}`;
+      intensity.textContent = `${point.intensity}/10`;
+
+      info.appendChild(name);
+      info.appendChild(intensity);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'pain-point-remove';
+      removeBtn.type = 'button';
+      removeBtn.innerHTML = '×';
+      removeBtn.title = `Remove ${point.displayName}`;
+      removeBtn.setAttribute('aria-label', `Remove ${point.displayName}`);
+      removeBtn.addEventListener('click', () => {
+        removePainPoint(key);
+      });
+
+      li.appendChild(info);
+      li.appendChild(removeBtn);
+      selectedAreasEl.appendChild(li);
+    });
   }
 
   // Red Flags

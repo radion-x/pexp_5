@@ -472,10 +472,110 @@ select.full-width {
 
 .selected-areas-display strong {
   color: var(--text);
+  display: block;
+  margin-bottom: 12px;
 }
 
-.selected-areas-display span {
+.pain-points-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pain-points-list .no-pain-points {
   color: var(--text-light);
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.pain-point-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-secondary);
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.pain-point-item:hover {
+  background: #f0f9f8;
+  border-color: var(--primary);
+  box-shadow: 0 2px 4px rgba(22, 165, 150, 0.1);
+}
+
+.pain-point-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.pain-point-name {
+  color: var(--text);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.pain-point-intensity {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: white;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+}
+
+.pain-point-intensity.low {
+  color: #0ea5e9;
+  border-color: #bae6fd;
+  background: #f0f9ff;
+}
+
+.pain-point-intensity.medium {
+  color: #f59e0b;
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.pain-point-intensity.high {
+  color: #ef4444;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.pain-point-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-light);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+}
+
+.pain-point-remove:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  transform: scale(1.1);
+}
+
+.pain-point-remove:active {
+  transform: scale(0.95);
 }
 
 .body-diagram {

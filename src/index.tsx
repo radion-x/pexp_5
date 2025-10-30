@@ -330,7 +330,9 @@ app.get('/', (c) => {
                     
                     <div class="selected-areas-display">
                       <strong>Selected Pain Areas:</strong>
-                      <span id="selectedAreas">No areas selected yet</span>
+                      <ul id="selectedAreas" class="pain-points-list">
+                        <li class="no-pain-points">No areas selected yet</li>
+                      </ul>
                     </div>
 
                     <!-- Front View -->
