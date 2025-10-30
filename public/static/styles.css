@@ -1116,6 +1116,47 @@ input[type="range"]::-moz-range-thumb {
     display: none;
   }
 
+  /* Mobile sidebar optimization */
+  .progress-sidebar {
+    padding: 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Hide the text menu on mobile */
+  .sidebar-steps {
+    display: none;
+  }
+
+  /* Make progress circle much smaller and cooler */
+  .progress-circle {
+    width: 60px;
+    height: 60px;
+    margin: 0;
+  }
+
+  .progress-text {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* Add segmented pie look with gaps */
+  .progress-circle svg {
+    filter: drop-shadow(0 2px 4px rgba(22, 165, 150, 0.2));
+  }
+
+  .progress-bg {
+    stroke-width: 6;
+    stroke-dasharray: 4 4;
+  }
+
+  .progress-bar {
+    stroke-width: 6;
+    stroke-dasharray: 4 4;
+  }
+
   .wizard-content {
     padding: 24px;
   }
