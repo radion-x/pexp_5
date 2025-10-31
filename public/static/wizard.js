@@ -679,6 +679,7 @@
     currentStep = step;
     updateProgress();
     updateNavigation();
+    updateMobileNav();
 
     // Generate review if on last step
     if (step === totalSteps) {
@@ -709,7 +710,35 @@
     }
   }
 
+  // Update header color based on current step
+  function updateHeaderColor(step) {
+    const header = document.getElementById('wizardHeader');
+    if (!header) return;
+
+    // Remove all step classes
+    header.classList.remove('step-1-active', 'step-2-active', 'step-3-active', 'step-4-active', 'step-5-active');
+
+    // Add current step class
+    header.classList.add(`step-${step}-active`);
+
+    // Update theme-color meta tag for mobile
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      const colors = {
+        1: '#10b981',
+        2: '#3b82f6',
+        3: '#0891b2',
+        4: '#f59e0b',
+        5: '#16a34a'
+      };
+      metaThemeColor.setAttribute('content', colors[step] || colors[1]);
+    }
+  }
+
   function updateNavigation() {
+    // Update header color
+    updateHeaderColor(currentStep);
+
     // Previous button
     prevBtn.style.display = currentStep === 1 ? 'none' : 'inline-flex';
 
@@ -724,6 +753,32 @@
 
     if (startOverBtn) {
       startOverBtn.style.display = currentStep === totalSteps ? 'inline-flex' : 'none';
+    }
+  }
+
+  // Mobile bottom navigation
+  function updateMobileNav() {
+    const mobileBackBtn = document.getElementById('mobileBackBtn');
+    const mobileNextBtn = document.getElementById('mobileNextBtn');
+    const mobileStepNum = document.getElementById('mobileStepNum');
+
+    if (!mobileBackBtn || !mobileNextBtn || !mobileStepNum) return;
+
+    // Update step number
+    mobileStepNum.textContent = currentStep;
+
+    // Show/hide back button
+    if (currentStep === 1) {
+      mobileBackBtn.style.display = 'none';
+    } else {
+      mobileBackBtn.style.display = 'flex';
+    }
+
+    // Update next button text and state
+    if (currentStep === totalSteps) {
+      mobileNextBtn.innerHTML = '<span class="nav-label">Submit</span><span class="nav-icon">✓</span>';
+    } else {
+      mobileNextBtn.innerHTML = '<span class="nav-label">Next</span><span class="nav-icon">→</span>';
     }
   }
 
@@ -1109,6 +1164,35 @@
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit Assessment';
     }
+  }
+
+  // Mobile navigation event listeners
+  const mobileBackBtn = document.getElementById('mobileBackBtn');
+  const mobileNextBtn = document.getElementById('mobileNextBtn');
+
+  if (mobileBackBtn) {
+    mobileBackBtn.addEventListener('click', function() {
+      if (currentStep > 1) {
+        showStep(currentStep - 1);
+      }
+    });
+  }
+
+  if (mobileNextBtn) {
+    mobileNextBtn.addEventListener('click', function() {
+      if (currentStep < totalSteps) {
+        // Validate before proceeding
+        if (validateStep(currentStep)) {
+          showStep(currentStep + 1);
+        }
+      } else {
+        // Submit form
+        const submitButton = document.getElementById('submitBtn');
+        if (submitButton) {
+          submitButton.click();
+        }
+      }
+    });
   }
 
   // Periodic autosave

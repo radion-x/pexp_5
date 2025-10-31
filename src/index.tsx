@@ -207,18 +207,20 @@ app.get('/', (c) => {
     <head>
       <meta charset="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-      <meta name="theme-color" content="#16a596" />
+      <meta name="theme-color" content="#10b981" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       <meta name="apple-mobile-web-app-title" content="PEXP" />
       <meta name="mobile-web-app-capable" content="yes" />
+      <meta name="format-detection" content="telephone=no" />
       <link rel="manifest" href="/static/manifest.json" />
+      <link rel="apple-touch-icon" href="/static/icon-192.png" />
       <title>PEXP - Patient Experience Assessment Platform</title>
       <link rel="stylesheet" href="/static/styles.css" />
     </head>
     <body>
       <!-- Progress Steps -->
-      <div class="wizard-header">
+      <div class="wizard-header step-1-active" id="wizardHeader">
         <div class="wizard-steps">
           <div class="step active" data-step="1">
             <div class="step-circle">1</div>
@@ -643,6 +645,21 @@ app.get('/', (c) => {
           </form>
         </div>
       </main>
+
+      <!-- Mobile Bottom Navigation -->
+      <div class="mobile-bottom-nav">
+        <button type="button" class="mobile-nav-btn btn-back" id="mobileBackBtn" style="display:none;">
+          <span class="nav-icon">←</span>
+          <span class="nav-label">Back</span>
+        </button>
+        <div class="mobile-step-indicator">
+          <span id="mobileStepNum">1</span> of 5
+        </div>
+        <button type="button" class="mobile-nav-btn" id="mobileNextBtn">
+          <span class="nav-label">Next</span>
+          <span class="nav-icon">→</span>
+        </button>
+      </div>
 
       <!-- Modal for red-flag alert -->
       <div id="redFlagModal" class="modal" aria-hidden="true">
