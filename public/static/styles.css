@@ -868,9 +868,7 @@ select.full-width {
 
 /* Pain Scale Section */
 .pain-scale-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: none;
 }
 
 .pain-scale-labels-top {
@@ -1079,12 +1077,7 @@ select.full-width {
 }
 
 .quick-select-label {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  display: none;
 }
 
 .quick-select-grid {
@@ -1271,63 +1264,65 @@ select.full-width {
 /* Mobile Optimizations */
 @media (max-width: 768px) {
   .pain-intensity-modal {
-    align-items: flex-end;
+    align-items: center;
+    justify-content: center;
   }
 
   .pain-modal-content {
-    width: 100%;
+    width: 92%;
     max-width: none;
-    border-radius: 24px 24px 0 0;
-    transform: translateY(100%);
-    max-height: 85vh;
-    overflow-y: auto;
+    border-radius: 20px;
+    transform: scale(0.9) translateY(20px);
+    max-height: none;
+    overflow-y: visible;
   }
 
   .pain-intensity-modal[aria-hidden="false"] .pain-modal-content {
-    transform: translateY(0);
+    transform: scale(1) translateY(0);
   }
 
   .pain-modal-header {
-    padding: 20px 20px 16px;
-    padding-top: calc(20px + env(safe-area-inset-top, 0px));
+    padding: 18px 20px 14px;
+  }
+
+  .pain-modal-header h3 {
+    font-size: 18px;
+  }
+
+  .pain-modal-location {
+    font-size: 14px;
   }
 
   .pain-modal-body {
-    padding: 24px 20px;
+    padding: 16px 20px;
   }
 
   .pain-modal-footer {
-    padding: 16px 20px;
-    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    padding: 14px 20px;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 12px));
   }
 
   .quick-select-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .pain-value-number {
-    font-size: 56px;
-  }
-
-  /* Larger touch targets */
-  .pain-scale-slider::-webkit-slider-thumb {
-    width: 40px;
-    height: 40px;
-  }
-
-  .pain-scale-slider::-moz-range-thumb {
-    width: 40px;
-    height: 40px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 
   .quick-select-btn {
-    min-height: 80px;
-    padding: 16px 12px;
+    min-height: 70px;
+    padding: 12px 8px;
+  }
+
+  .quick-btn-number {
+    font-size: 22px;
+  }
+
+  .quick-btn-label {
+    font-size: 12px;
   }
 
   .pain-modal-btn {
-    padding: 16px 24px;
-    font-size: 17px;
+    padding: 14px 20px;
+    font-size: 16px;
   }
 }
 
@@ -1895,9 +1890,7 @@ input[type="range"]::-moz-range-thumb {
 
   /* Make progress circle much smaller and cooler */
   .progress-circle {
-    width: 60px;
-    height: 60px;
-    margin: 0;
+    display: none;
   }
 
   .progress-text {
@@ -1966,7 +1959,7 @@ input[type="range"]::-moz-range-thumb {
   }
 
   .wizard-container {
-    margin: 16px auto;
+    margin: 8px auto;
     padding: 0;
   }
 
@@ -1993,7 +1986,7 @@ input[type="range"]::-moz-range-thumb {
 
   /* Body map and pain points mobile optimization */
   .body-map-container {
-    padding: 16px 12px;
+    padding: 16px;
   }
 
   .selected-areas-display {
@@ -2090,9 +2083,14 @@ input[type="range"]::-moz-range-thumb {
 
   /* Form elements mobile fixes */
   .form-section {
-    padding: 16px 12px;
+    padding: 16px 16px;
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: visible;
+  }
+
+  .pain-details-section {
+    padding: 0;
+    gap: 16px;
   }
 
   .form-section h3 {
@@ -2111,6 +2109,7 @@ input[type="range"]::-moz-range-thumb {
   select,
   textarea {
     font-size: 16px;
+    width: 100%;
     max-width: 100%;
   }
 
@@ -2153,6 +2152,7 @@ input[type="range"]::-moz-range-thumb {
     top: 0;
     z-index: 100;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding-top: max(env(safe-area-inset-top, 20px), 20px);
   }
 
   /* Mobile Bottom Navigation */
@@ -2290,8 +2290,9 @@ input[type="range"]::-moz-range-thumb {
   }
 
   .step.completed .step-circle {
-    background: rgba(255, 255, 255, 0.95);
-    color: var(--step-5-from);
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
   }
 }
 

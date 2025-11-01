@@ -375,16 +375,6 @@ app.get('/', (c) => {
                         <option value="More than 2 years">More than 2 years</option>
                       </select>
                     </div>
-
-                    <div class="form-group">
-                      <label>Pain Intensity (0-10)</label>
-                      <div class="slider-container">
-                        <span class="slider-label">No Pain</span>
-                        <input type="range" min="0" max="10" value="5" name="painIntensity" id="painIntensity" />
-                        <span class="slider-label">Worst Pain</span>
-                      </div>
-                      <div class="slider-value" id="sliderValue">5</div>
-                    </div>
                   </div>
                 </div>
 
@@ -398,49 +388,8 @@ app.get('/', (c) => {
                     </div>
 
                     <div class="pain-modal-body">
-                      <!-- Visual Slider Section -->
-                      <div class="pain-scale-section">
-                        <div class="pain-scale-labels-top">
-                          <span class="pain-label-start">No Pain</span>
-                          <span class="pain-label-end">Worst Pain</span>
-                        </div>
-
-                        <div class="pain-scale-slider-wrapper">
-                          <input
-                            type="range"
-                            min="0"
-                            max="10"
-                            value="5"
-                            step="1"
-                            class="pain-scale-slider"
-                            id="painModalSlider"
-                            aria-label="Pain intensity from 0 to 10"
-                          />
-                          <div class="pain-scale-track-bg"></div>
-                          <div class="pain-scale-markers">
-                            <span class="scale-marker" data-value="0">0</span>
-                            <span class="scale-marker" data-value="1">1</span>
-                            <span class="scale-marker" data-value="2">2</span>
-                            <span class="scale-marker" data-value="3">3</span>
-                            <span class="scale-marker" data-value="4">4</span>
-                            <span class="scale-marker" data-value="5">5</span>
-                            <span class="scale-marker" data-value="6">6</span>
-                            <span class="scale-marker" data-value="7">7</span>
-                            <span class="scale-marker" data-value="8">8</span>
-                            <span class="scale-marker" data-value="9">9</span>
-                            <span class="scale-marker" data-value="10">10</span>
-                          </div>
-                        </div>
-
-                        <div class="pain-scale-value-display">
-                          <div class="pain-value-number" id="painModalValue">5</div>
-                          <div class="pain-value-description" id="painModalDescription">Moderate Pain</div>
-                        </div>
-                      </div>
-
                       <!-- Quick Select Buttons -->
                       <div class="pain-quick-select">
-                        <p class="quick-select-label">Quick Select:</p>
                         <div class="quick-select-grid">
                           <button type="button" class="quick-select-btn" data-intensity="0" data-label="None">
                             <span class="quick-btn-number">0</span>
