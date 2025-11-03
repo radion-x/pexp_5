@@ -299,23 +299,33 @@ app.get('/', (c) => {
             <div class="wizard-step active" data-step="1">
               <div class="step-content">
                 <div class="hero-section">
-                  <span class="hero-icon">📊</span>
+                  <svg class="hero-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
                   <h1>Welcome to PEXP</h1>
                   <p class="subtitle">Objective metrics tracking for measurable outcomes</p>
                 </div>
                 
-                <div class="info-cards">
-                  <div class="info-card">
-                    <span class="info-icon">🔒</span>
-                    <p>All information is confidential and HIPAA-compliant</p>
+                <div class="info-footer">
+                  <div class="info-item">
+                    <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <rect x="5" y="11" width="14" height="10" rx="2" stroke-width="2"/>
+                      <path d="M12 17V17.01M8 11V7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7V11" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>HIPAA-compliant & confidential</span>
                   </div>
-                  <div class="info-card">
-                    <span class="info-icon">💾</span>
-                    <p>Your responses are automatically saved as you progress</p>
+                  <div class="info-item">
+                    <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16L21 8V19C21 20.1046 20.1046 21 19 21Z" stroke-width="2"/>
+                      <path d="M17 21V13H7V21M7 3V8H15" stroke-width="2"/>
+                    </svg>
+                    <span>Auto-saved progress</span>
                   </div>
-                  <div class="info-card">
-                    <span class="info-icon">📈</span>
-                    <p>Monitor your recovery and treatment adherence</p>
+                  <div class="info-item">
+                    <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Track recovery metrics</span>
                   </div>
                 </div>
 
@@ -686,8 +696,12 @@ app.get('/', (c) => {
                   <div class="ai-summary-text" id="aiSummaryText" aria-live="polite"></div>
                 </div>
 
-                <div class="privacy-notice">
-                  <p>🔒 Your information is protected and will be handled in accordance with HIPAA regulations. All data is encrypted and secure.</p>
+                <div class="privacy-footer">
+                  <svg class="privacy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="5" y="11" width="14" height="10" rx="2" stroke-width="2"/>
+                    <path d="M12 17V17.01M8 11V7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7V11" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  <span>Your information is protected and encrypted in accordance with HIPAA regulations</span>
                 </div>
               </div>
             </div>
