@@ -1684,6 +1684,7 @@ input[type="range"]::-moz-range-thumb {
   width: 100%;
   margin: 24px 0;
   padding: 16px;
+  padding-top: 32px;
   background: #ffffff;
   border-radius: 8px;
 }
@@ -2237,6 +2238,7 @@ input[type="range"]::-moz-range-thumb {
 
   .trajectory-canvas-container {
     padding: 4px;
+    padding-top: 24px;
     margin: 16px -8px;
   }
 
