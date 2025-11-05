@@ -2221,20 +2221,33 @@ input[type="range"]::-moz-range-thumb {
   /* Recovery Trajectory - Mobile */
   .recovery-trajectory-section {
     margin-top: 24px;
-    padding: 20px 16px;
+    padding: 16px 12px;
   }
 
   .trajectory-header h3 {
-    font-size: 18px;
+    font-size: 16px;
+    margin-bottom: 8px;
   }
 
   .trajectory-description {
-    font-size: 13px;
-    padding: 12px;
+    font-size: 12px;
+    padding: 10px;
+    line-height: 1.5;
   }
 
   .trajectory-canvas-container {
-    padding: 8px;
+    padding: 4px;
+    margin: 16px -8px;
+  }
+
+  #recoveryTrajectoryChart {
+    max-height: 280px;
+  }
+
+  .trajectory-legend {
+    font-size: 11px;
+    padding-top: 12px;
+    margin-top: 12px;
   }
 
   /* Save status mobile */

@@ -1529,7 +1529,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: true,
-        aspectRatio: 2,
+        aspectRatio: window.innerWidth < 768 ? 1.3 : 2,
         plugins: {
           title: {
             display: false
@@ -1539,15 +1539,24 @@
             position: 'bottom',
             labels: {
               usePointStyle: true,
-              padding: 15,
+              padding: window.innerWidth < 768 ? 8 : 15,
               font: {
-                size: 12
-              }
+                size: window.innerWidth < 768 ? 10 : 12
+              },
+              boxWidth: window.innerWidth < 768 ? 20 : 40,
+              boxHeight: window.innerWidth < 768 ? 10 : 12
             }
           },
           tooltip: {
             mode: 'index',
             intersect: false,
+            titleFont: {
+              size: window.innerWidth < 768 ? 11 : 12
+            },
+            bodyFont: {
+              size: window.innerWidth < 768 ? 10 : 12
+            },
+            padding: window.innerWidth < 768 ? 8 : 12,
             callbacks: {
               title: function(context) {
                 const week = context[0].parsed.x;
@@ -1569,7 +1578,7 @@
               display: true,
               text: 'Time (weeks)',
               font: {
-                size: 13,
+                size: window.innerWidth < 768 ? 11 : 13,
                 weight: 'bold'
               }
             },
@@ -1577,6 +1586,9 @@
             max: maxWeeks,
             ticks: {
               stepSize: 4,
+              font: {
+                size: window.innerWidth < 768 ? 9 : 11
+              },
               callback: function(value) {
                 if (value === 0) return 'Now';
                 return value;
@@ -1591,14 +1603,17 @@
               display: true,
               text: 'Pain Level (0-10)',
               font: {
-                size: 13,
+                size: window.innerWidth < 768 ? 11 : 13,
                 weight: 'bold'
               }
             },
             min: 0,
             max: 10,
             ticks: {
-              stepSize: 2
+              stepSize: 2,
+              font: {
+                size: window.innerWidth < 768 ? 9 : 11
+              }
             },
             reverse: false,
             grid: {
