@@ -303,8 +303,8 @@ app.get('/', (c) => {
                   <svg class="hero-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                  <h1>Welcome to PEXP</h1>
-                  <p class="subtitle">Objective metrics tracking for measurable outcomes</p>
+                  <h1>Welcome to QIVR</h1>
+                  <p class="subtitle">Turning signals into insights</p>
                 </div>
                 
                 <div class="info-footer">
@@ -364,19 +364,29 @@ app.get('/', (c) => {
               <div class="step-content">
                 <h2>Pain Location & Duration</h2>
                 <p class="step-description">Click on the areas of your body where you experience pain. You can select multiple locations.</p>
-                
+
+                <div class="pain-details-section">
+                  <div class="form-group">
+                    <label>How long have you had this pain? *</label>
+                    <select name="painDuration" required>
+                      <option value="">Select duration...</option>
+                      <option value="Less than 1 week">Less than 1 week</option>
+                      <option value="1-2 weeks">1-2 weeks</option>
+                      <option value="2-4 weeks">2-4 weeks</option>
+                      <option value="1-3 months">1-3 months</option>
+                      <option value="3-6 months">3-6 months</option>
+                      <option value="6-12 months">6-12 months</option>
+                      <option value="1-2 years">1-2 years</option>
+                      <option value="More than 2 years">More than 2 years</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div class="pain-map-section">
                   <div class="body-map-container">
                     <div class="view-toggle">
                       <button type="button" class="view-btn active" data-view="front">Front View</button>
                       <button type="button" class="view-btn" data-view="back">Back View</button>
-                    </div>
-                    
-                    <div class="selected-areas-display">
-                      <strong>Selected Pain Areas:</strong>
-                      <ul id="selectedAreas" class="pain-points-list">
-                        <li class="no-pain-points">No areas selected yet</li>
-                      </ul>
                     </div>
 
                     <!-- Front View -->
@@ -394,22 +404,12 @@ app.get('/', (c) => {
                         <div class="hotspot-layer" data-view="back" aria-hidden="true"></div>
                       </div>
                     </div>
-                  </div>
 
-                  <div class="pain-details-section">
-                    <div class="form-group">
-                      <label>How long have you had this pain? *</label>
-                      <select name="painDuration" required>
-                        <option value="">Select duration...</option>
-                        <option value="Less than 1 week">Less than 1 week</option>
-                        <option value="1-2 weeks">1-2 weeks</option>
-                        <option value="2-4 weeks">2-4 weeks</option>
-                        <option value="1-3 months">1-3 months</option>
-                        <option value="3-6 months">3-6 months</option>
-                        <option value="6-12 months">6-12 months</option>
-                        <option value="1-2 years">1-2 years</option>
-                        <option value="More than 2 years">More than 2 years</option>
-                      </select>
+                    <div class="selected-areas-display">
+                      <strong>Selected Pain Areas:</strong>
+                      <ul id="selectedAreas" class="pain-points-list">
+                        <li class="no-pain-points">No areas selected yet</li>
+                      </ul>
                     </div>
                   </div>
                 </div>

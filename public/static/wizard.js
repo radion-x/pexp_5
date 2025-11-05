@@ -1429,7 +1429,10 @@
                      (formData.symptoms ? [formData.symptoms] : []);
     const goals = Array.isArray(formData.goals) ? formData.goals :
                   (formData.goals ? [formData.goals] : []);
-    const painIntensity = formData.painIntensity || 5;
+    // Get the highest pain intensity from all pain areas (worst pain drives recovery planning)
+    const painIntensity = formData.painPoints?.length > 0
+      ? Math.max(...formData.painPoints.map(p => p.intensity || 0))
+      : 5;
     const timeline = formData.timeline || '';
 
     // Get appropriate benchmark for this patient
