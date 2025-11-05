@@ -1,6 +1,3 @@
-import nodemailer from 'nodemailer'
-import type { Transporter } from 'nodemailer'
-
 interface EmailConfig {
   smtpServer: string
   smtpPort: number
@@ -21,21 +18,54 @@ interface FormSubmissionData {
   [key: string]: any
 }
 
-function createTransporter(config: EmailConfig): Transporter {
-  return nodemailer.createTransport({
-    host: config.smtpServer,
-    port: config.smtpPort,
-    secure: false, // true for 465, false for other ports
-    connectionTimeout: 10000, // 10 seconds instead of default 2s
-    greetingTimeout: 10000,   // 10 seconds for SMTP greeting
-    socketTimeout: 10000,     // 10 seconds for socket operations
-    auth: {
-      user: config.smtpLogin,
-      pass: config.smtpPassword,
+interface MailgunResponse {
+  id: string
+  message: string
+}
+
+/**
+ * Sends email via Mailgun HTTP API (port 443/HTTPS)
+ * This avoids SMTP port 587 which is blocked in Coolify
+ */
+async function sendMailgunEmail(
+  from: string,
+  to: string,
+  subject: string,
+  html: string,
+  apiKey: string,
+  domain: string,
+  bcc?: string
+): Promise<{ success: boolean; messageId: string }> {
+  // Extract domain from sender address if not provided
+  const mailgunDomain = domain || from.split('@')[1]
+
+  // Build form data for Mailgun API
+  const formData = new URLSearchParams()
+  formData.append('from', from)
+  formData.append('to', to)
+  formData.append('subject', subject)
+  formData.append('html', html)
+  if (bcc) {
+    formData.append('bcc', bcc)
+  }
+
+  // Call Mailgun REST API
+  const response = await fetch(`https://api.mailgun.net/v3/${mailgunDomain}/messages`, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Basic ' + Buffer.from(`api:${apiKey}`).toString('base64'),
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
-    logger: true,  // Enable console logging
-    debug: true    // Enable SMTP-level debugging
+    body: formData.toString()
   })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Mailgun API error (${response.status}): ${errorText}`)
+  }
+
+  const result: MailgunResponse = await response.json() as MailgunResponse
+  return { success: true, messageId: result.id }
 }
 
 function generatePatientConfirmationEmail(data: FormSubmissionData): string {
@@ -187,18 +217,21 @@ export async function sendSubmissionEmails(
   config: EmailConfig
 ): Promise<{ success: boolean; errors: string[] }> {
   const errors: string[] = []
-  const transporter = createTransporter(config)
+  const apiKey = config.smtpPassword // Use SMTP password as Mailgun API key
+  const domain = config.senderAddress.split('@')[1] // Extract domain from sender
 
   // Email 1: Send confirmation to patient
   if (formData.email) {
     try {
-      await transporter.sendMail({
-        from: `"PEXP Assessment" <${config.senderAddress}>`,
-        to: formData.email,
-        subject: `Your Pain Assessment Submission - ${formData.fullName || 'Confirmation'}`,
-        html: generatePatientConfirmationEmail(formData),
-      })
-      console.log(`✓ Confirmation email sent to patient: ${formData.email}`)
+      const result = await sendMailgunEmail(
+        `"QIVR Assessment" <${config.senderAddress}>`,
+        formData.email,
+        `Your Pain Assessment Submission - ${formData.fullName || 'Confirmation'}`,
+        generatePatientConfirmationEmail(formData),
+        apiKey,
+        domain
+      )
+      console.log(`✓ Confirmation email sent to patient: ${formData.email} (Message ID: ${result.messageId})`)
     } catch (error) {
       const errorMsg = `Failed to send confirmation email to patient: ${error instanceof Error ? error.message : String(error)}`
       console.error(errorMsg)
@@ -212,20 +245,16 @@ export async function sendSubmissionEmails(
 
   // Email 2: Send notification to clinic
   try {
-    const mailOptions: any = {
-      from: `"PEXP Assessment System" <${config.senderAddress}>`,
-      to: config.recipientAddress,
-      subject: `New Pain Assessment - ${formData.fullName || 'New Patient'}`,
-      html: generateClinicNotificationEmail(formData),
-    }
-
-    // Add BCC if configured
-    if (config.bccAddress) {
-      mailOptions.bcc = config.bccAddress
-    }
-
-    await transporter.sendMail(mailOptions)
-    console.log(`✓ Notification email sent to clinic: ${config.recipientAddress}`)
+    const result = await sendMailgunEmail(
+      `"QIVR Assessment System" <${config.senderAddress}>`,
+      config.recipientAddress,
+      `New Pain Assessment - ${formData.fullName || 'New Patient'}`,
+      generateClinicNotificationEmail(formData),
+      apiKey,
+      domain,
+      config.bccAddress
+    )
+    console.log(`✓ Notification email sent to clinic: ${config.recipientAddress} (Message ID: ${result.messageId})`)
     if (config.bccAddress) {
       console.log(`  (BCC: ${config.bccAddress})`)
     }
