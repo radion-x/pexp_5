@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pexp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pexp_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: pexp_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pexp_user -d pexp_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pexp-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://pexp_user:${POSTGRES_PASSWORD:-changeme}@postgres:5432/pexp_db
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY}
+      CLAUDE_MODEL: ${CLAUDE_MODEL}
+      EMAIL_SENDER_ADDRESS: ${EMAIL_SENDER_ADDRESS}
+      EMAIL_RECIPIENT_ADDRESS: ${EMAIL_RECIPIENT_ADDRESS}
+      BCC_EMAIL_RECIPIENT_ADDRESS: ${BCC_EMAIL_RECIPIENT_ADDRESS}
+      MAILGUN_API_KEY: ${MAILGUN_API_KEY}
+      MAILGUN_SMTP_SERVER: ${MAILGUN_SMTP_SERVER}
+      MAILGUN_SMTP_PORT: ${MAILGUN_SMTP_PORT}
+      MAILGUN_SMTP_LOGIN: ${MAILGUN_SMTP_LOGIN}
+      MAILGUN_SMTP_PASSWORD: ${MAILGUN_SMTP_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:

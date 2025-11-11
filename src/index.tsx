@@ -10,6 +10,7 @@ import { streamSSE } from 'hono/streaming'
 import { generateComprehensivePrompt } from './prompt-builder.js'
 import { sendSubmissionEmails } from './email-service.js'
 import { BUILD_VERSION } from './version.js'
+import { testConnection, savePatientSubmission, type PatientSubmission } from './database.js'
 
 const app = new Hono()
 
@@ -20,6 +21,11 @@ const anthropic = claudeApiKey ? new Anthropic({ apiKey: claudeApiKey }) : null
 if (!claudeApiKey) {
   console.warn('CLAUDE_API_KEY is not set. AI summary endpoint will be disabled.')
 }
+
+// Test database connection on startup
+testConnection().catch(err => {
+  console.error('Failed to connect to database on startup:', err)
+})
 
 // Enable CORS for API routes
 app.use('/api/*', cors())
@@ -179,13 +185,50 @@ app.post('/api/submit-intake', async (c) => {
   try {
     const body = await c.req.json()
 
-    // Log the submission (in production, save to database)
+    // Log the submission
     console.log('Form submission received:', {
       timestamp: new Date().toISOString(),
       email: body.email,
       selectedAreas: body.selectedAreas,
       painIntensity: body.painIntensity
     })
+
+    // Prepare data for database
+    const submissionData: PatientSubmission = {
+      fullName: body.fullName,
+      email: body.email,
+      phone: body.phone,
+      dateOfBirth: body.dob,
+      painDuration: body.painDuration,
+      painIntensity: body.painIntensity,
+      painStart: body.painStart,
+      additionalHistory: body.additionalHistory,
+      medications: body.medications,
+      mobilityAids: body.mobilityAids,
+      timeline: body.timeline,
+      milestones: body.milestones,
+      concerns: body.concerns,
+      consent: body.consent === true || body.consent === 'true',
+      aiSummary: body.aiSummary,
+      selectedAreas: Array.isArray(body.selectedAreas) ? body.selectedAreas : [],
+      redFlags: Array.isArray(body.redFlags) ? body.redFlags : [],
+      prevOrtho: Array.isArray(body.prevOrtho) ? body.prevOrtho : [],
+      currentTreatments: Array.isArray(body.currentTreatments) ? body.currentTreatments : [],
+      dailyImpact: Array.isArray(body.dailyImpact) ? body.dailyImpact : [],
+      goals: Array.isArray(body.goals) ? body.goals : [],
+      painPoints: Array.isArray(body.painPoints) ? body.painPoints : [],
+      rawFormData: body
+    }
+
+    // Save to database
+    let submissionId: number | null = null
+    try {
+      submissionId = await savePatientSubmission(submissionData)
+      console.log(`✅ Submission saved to database with ID: ${submissionId}`)
+    } catch (dbError) {
+      console.error('Database save failed:', dbError)
+      // Continue with email sending even if database fails
+    }
 
     // Send confirmation and notification emails
     const emailConfig = {
@@ -207,7 +250,7 @@ app.post('/api/submit-intake', async (c) => {
     return c.json({
       success: true,
       message: 'Assessment submitted successfully',
-      id: Math.random().toString(36).substring(7)
+      id: submissionId || Math.random().toString(36).substring(7)
     })
   } catch (error) {
     console.error('Submission error:', error)
@@ -216,6 +259,15 @@ app.post('/api/submit-intake', async (c) => {
       message: 'Failed to submit assessment'
     }, 500)
   }
+})
+
+// Health check endpoint
+app.get('/api/health', (c) => {
+  return c.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    version: BUILD_VERSION
+  })
 })
 
 // Main page route
