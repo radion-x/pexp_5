@@ -262,12 +262,24 @@ app.post('/api/submit-intake', async (c) => {
 })
 
 // Health check endpoint
-app.get('/api/health', (c) => {
-  return c.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    version: BUILD_VERSION
-  })
+app.get('/api/health', async (c) => {
+  try {
+    await testConnection()
+    return c.json({
+      status: 'ok',
+      database: 'connected',
+      timestamp: new Date().toISOString(),
+      version: BUILD_VERSION
+    })
+  } catch (error) {
+    return c.json({
+      status: 'error',
+      database: 'disconnected',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+      version: BUILD_VERSION
+    }, 503)
+  }
 })
 
 // Main page route
